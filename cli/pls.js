@@ -1,45 +1,22 @@
 #!/usr/bin/env node --harmony
-let main = require('./lib/pleasure-cli.js')
-
 const { findRoot, getCLIPlugins } = require('pleasure')
+const { printCommandsIndex } = require('../lib/print-commands-index.js')
+const subcommand = require('subcommand')
+
 process.chdir(findRoot())
 
+const commands = getCLIPlugins(subcommand)
+
 // todo: load more commands via plugins
-const plugins = getCLIPlugins()
-
-/*
-main
-  .usage('<command>')
-*/
-
-const fnNull = _ => {}
-
-plugins.forEach(({ cmd, description, handler, cliPath }) => {
-  if (handler) {
-    handler = handler.bind(null, process.argv.filter((v, index) => {
-      return index !== 2
-    }).map((v, index) => {
-      if (cliPath && index === 1) {
-        return cliPath
-      }
-      return v
-    }))
-  }
-
-  main
-    .command(cmd)
-    .description(description)
-    .action(handler || fnNull)
-  /*
-  main.command('db', 'database options')
-      .command('app', 'app options')
-      .command('docs', 'documentation & guide generator')
-  */
+const match = subcommand({
+  root: {
+    command() {
+      printCommandsIndex(commands)
+    }
+  },
+  commands
 })
-// main.action(handler)
-main.parse(process.argv)
+// todo: create help function
 
-if (!process.argv.slice(2).length) {
-  main.outputHelp()
-  process.exit(0)
-}
+// console.log(process.argv.slice(2))
+match(process.argv.slice(2))
