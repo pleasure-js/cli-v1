@@ -2,6 +2,7 @@ const { create: createApp } = require('pleasure-create-tool')
 const { printCommandsIndex } = require('../../lib/print-commands-index.js')
 const { askForDestination } = require('../lib/ask-for-destination.js')
 const inquirer = require('inquirer')
+const subcommand = require('subcommand')
 
 const boilerplates = {
   'Rollup bundler': 'keepwondering/pleasure-boilerplate-rollup-bundle',
