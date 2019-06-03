@@ -2,7 +2,8 @@ const { create: createApp } = require('pleasure-create-tool')
 const { printCommandsIndex } = require('../../lib/print-commands-index.js')
 const { askForDestination } = require('../lib/ask-for-destination.js')
 const inquirer = require('inquirer')
-const subcommand = require('subcommand')
+const path = require('path')
+const subcommand = require('../lib/subcommand.js')
 
 const boilerplates = {
   'Rollup bundler': 'keepwondering/pleasure-boilerplate-rollup-bundle',
@@ -10,6 +11,18 @@ const boilerplates = {
   'Pleasure full-stack': 'keepwondering/pleasure-boilerplate-full'
 }
 
+const created = (dir, api) => {
+  console.log(`\n  All done. Now go and:`)
+  console.log(`  $ cd ${ path.relative(process.cwd(), dir) } # go to project`)
+  console.log(`  $ yarn --production=false # install dependencies`)
+  if (api) {
+    console.log(`  $ pls app gencert --jwt # create ssl keys for JWT`)
+  }
+  console.log(`  $ $EDITOR . # open the project in your default $EDITOR`)
+  console.log(``)
+  console.log(`  # oneliner`)
+  console.log(`  $ cd ${ path.relative(process.cwd(), dir) } && ${ api ? 'pls app gencert --jwt && ' : '' }yarn --production=false && $EDITOR .`)
+}
 
 const create = {
   name: 'create',
@@ -25,15 +38,18 @@ const create = {
         {
           name: 'app',
           help: 'scaffold a pleasure project',
-          async command ({ _: [repoName] }) {
-            const defaultRepo = repoName || path.join(__dirname, '../../pleasure-boilerplate-default')
-            await createApp(defaultRepo, await askForDestination())
+          async command ({ _: [projectName] }) {
+            const defaultRepo = path.join(__dirname, '../../../pleasure-boilerplate-default')
+            const destination = await askForDestination(projectName)
+            const { config: { api } } = await createApp(defaultRepo, destination)
+            created(destination, api)
+            process.exit(0)
           }
         },
         {
           name: 'boilerplate',
           help: 'create custom boilerplates (rollup bundles, vue plugins, pleasure plugins)',
-          async command ({ _: args }) {
+          async command ({ _: [projectName] }) {
             const answer = await inquirer.prompt([
               {
                 type: 'list',
@@ -45,16 +61,12 @@ const create = {
             let gitPath = `https://github.com/${ boilerplates[answer.boilerplate] }`
 
             if (process.env.NODE_ENV === 'development' && process.env.DEV_ENV === 'tin') {
-              gitPath = path.join(__dirname, `../../${ boilerplates[answer.boilerplate].replace(/^keepwondering\//, '') }`)
+              gitPath = path.join(__dirname, `../../../${ boilerplates[answer.boilerplate].replace(/^keepwondering\//, '') }`)
             }
-            try {
-              const destination = await askForDestination()
-              await createApp(gitPath, destination)
-              console.log(`\n  All done. Now go and:\n  $ cd ${ path.relative(process.cwd(), destination) } && yarn --production=false`)
-            } catch (err) {
-              console.log(`error installing ${ gitPath }`)
-              console.error(err.message)
-            }
+            const destination = await askForDestination(projectName)
+            await createApp(gitPath, destination)
+            created(destination)
+            process.exit(0)
           }
         }
       ]

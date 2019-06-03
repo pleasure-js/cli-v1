@@ -1,15 +1,10 @@
 const chalk = require('chalk')
-const { spawn } = require('child_process')
 const { getRoot } = require('../lib/get-root.js')
+const { exec } = require('../lib/exec.js')
 const { pathExists, readJson } = require('fs-extra')
 const { findRoot } = require('pleasure-utils')
-
-const exec = (cmd, args, options = {}) => {
-  return new Promise((resolve) => {
-    spawn(cmd, args, Object.assign({ stdio: 'inherit' }, options))
-      .on('exit', resolve)
-  })
-}
+const fs = require('fs')
+const path = require('path')
 
 const localOptions = [
   '--legacy' // prevents from running local found lint script
@@ -21,6 +16,13 @@ const lint = {
   async command ({ _: args }) {
     const pckJson = findRoot('package.json')
     let dargs = process.argv.filter(a => localOptions.indexOf(a) < 0 && /^-/.test(a))
+
+    const localEslintConfigFound = fs.readdirSync(findRoot()).filter(f => /^\.eslint\./.test(f)).length > 0
+
+    console.log({ localEslintConfigFound })
+    if (!localEslintConfigFound) {
+      dargs.push('-c', path.join(__dirname, '../lib/.eslintrc.js'))
+    }
 
     if (process.argv.indexOf('--legacy') < 0 && await pathExists(pckJson)) {
       const { scripts } = await readJson(pckJson)
@@ -35,7 +37,7 @@ const lint = {
         stdout && console.log(stdout)
         stderr && console.log(stderr)
 
-        return stdout
+        process.exit(0)
       }
     }
 
@@ -50,6 +52,7 @@ const lint = {
     const { stdout, stderr } = await exec(getRoot('node_modules/.bin/eslint'), dargs, { stdio: 'inherit' })
     stdout && console.log(stdout)
     stderr && console.log(stderr)
+    process.exit(0)
   }
 }
 

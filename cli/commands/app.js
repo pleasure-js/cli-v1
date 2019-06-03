@@ -1,0 +1,234 @@
+const fs = require('fs')
+const path = require('path')
+const { mkdirpSync, readJson, remove, pathExists } = require('fs-extra')
+const _ = require('lodash')
+const { exec } = require('../lib/exec.js')
+const { findRoot, findPackageJson, packageJson, getConfig } = require('pleasure-utils')
+const { Daemonizer } = require('pleasure-daemonizer')
+const { printStatus } = require('../lib/print-status.js')
+const inquirer = require('inquirer')
+const chalk = require('chalk')
+
+const { printCommandsIndex } = require('../../lib/print-commands-index.js')
+const Server = require('../../lib/server.js')
+
+const isPleasureProject = () => {
+  try {
+    getConfig()
+    return true
+  } catch (err) {
+    return false
+  }
+}
+
+const requirePleasureProject = () => {
+  if (!isPleasureProject()) {
+    throw new Error(`Pleasure project not found.\nYou can create one by:\n$ pls create app`)
+  }
+}
+
+const empty = s => {
+  return /^[\s]*$/.test(s)
+}
+
+const cli = {
+  root: {
+    command () {
+      printCommandsIndex(cli.commands)
+    }
+  },
+  commands: [
+    {
+      name: 'dev',
+      help: 'start the app in development mode',
+      async command () {
+        requirePleasureProject()
+        const { start } = Server()
+        const port = await start()
+        console.log(`Pleasure running on ${ port }`)
+        process.emit('pleasure-initialized')
+      }
+    },
+    {
+      name: 'start',
+      help: 'start the app in production (background)',
+      async command () {
+        requirePleasureProject()
+        const ProcessManager = new Daemonizer()
+        const id = packageJson().name
+
+        const { pid } = await ProcessManager.fork({
+          id,
+          spawnArgs: {
+            command: 'pls',
+            args: ['app', 'dev'],
+            options: {
+              cwd: findRoot(),
+              env: Object.assign({}, process.env, {
+                PLEASURE_PRODUCTION: true
+              })
+            }
+          }
+        })
+        printStatus(await ProcessManager.status(id))
+        // console.log(`Running '${ id }' (pid = ${ pid })`)
+        process.exit(0)
+      }
+    },
+    {
+      name: 'stop',
+      help: 'stops a running production app',
+      async command (args) {
+        requirePleasureProject()
+        const ProcessManager = new Daemonizer()
+        const id = packageJson().name
+
+        await ProcessManager.stop(id)
+        console.log(`'${ id }' has been stopped.`)
+        process.exit(0)
+      }
+    },
+    {
+      name: 'status',
+      help: 'checks whether the app is running or not',
+      async command () {
+        requirePleasureProject()
+        const ProcessManager = new Daemonizer()
+        const id = packageJson().name
+
+        const status = await ProcessManager.status(id)
+        const running = status.length === 1
+
+        if (!running) {
+          throw new Error(`${ id } is NOT running.`)
+        }
+
+        printStatus(status)
+        process.exit(0)
+      }
+    },
+    {
+      name: 'gencert',
+      help: 'generate SSL certs for JWT authentication or other',
+      async command (args) {
+        const util = require('util')
+        const exec = util.promisify(require('child_process').exec)
+        const { getPlugins } = require('pleasure-api')
+
+        const isJwt = process.argv.indexOf('--jwt') >= 0
+
+        let privateKey
+        let publicKey
+
+
+        const proceedWithJwt = () => {
+          ({ pluginsConfig: { jwt: { privateKey, publicKey } } } = getPlugins())
+
+          privateKey = findRoot(privateKey)
+          publicKey = findRoot(publicKey)
+        }
+
+        if (isJwt) {
+          proceedWithJwt()
+        }
+        else if (isPleasureProject()) {
+          const askJWT = await inquirer.prompt([
+            {
+              type: 'confirm',
+              name: 'jwt',
+              message: 'Would you like to setup keys for the JWT plugin?',
+              default: true
+            }
+          ])
+
+          if (askJWT.jwt) {
+            proceedWithJwt()
+          }
+        } else {
+          console.log(chalk.yellow(`BE AWARE! You are not in a pleasure project.`))
+        }
+
+        if (!privateKey || !publicKey) {
+          const askForKeysDestination = await inquirer.prompt([
+            {
+              name: 'privateKey',
+              suffix: ` ${ process.cwd() }/`,
+              default: `ssl-keys/private.key`,
+              message: 'Private key destination:',
+              validate (privateKey) {
+                return empty(privateKey) ? 'Enter a private key destination' : true
+              }
+            },
+            {
+              name: 'publicKey',
+              suffix: ` ${ process.cwd() }/`,
+              default: `ssl-keys/public.key.pub`,
+              message: 'Public key destination:',
+              validate (publicKey) {
+                return empty(publicKey) ? 'Enter a public key destination' : true
+              }
+            }
+          ]);
+
+          ({ privateKey, publicKey } = askForKeysDestination)
+          privateKey = path.join(process.cwd(), privateKey)
+          publicKey = path.join(process.cwd(), publicKey)
+        }
+
+        _.uniq([path.dirname(privateKey), path.dirname(publicKey)]).forEach(dir => {
+          mkdirpSync(dir)
+        })
+
+        if (fs.existsSync(privateKey) || fs.existsSync(publicKey)) {
+          const askToOverwrite = await inquirer.prompt({
+            type: 'confirm',
+            name: 'overwrite',
+            default: false,
+            message: 'Keys already exists, would you like to delete them?\nIMPORTANT! Be aware that any tokens signed with these keys may stop working in your application',
+          })
+
+          if (!askToOverwrite.overwrite) {
+            console.log(chalk.red(`\n  Refusing to overwrite existing keys:`))
+
+            if (fs.existsSync(privateKey)) {
+              console.log(`    `, privateKey)
+            }
+
+            if (fs.existsSync(publicKey)) {
+              console.log(`    `, publicKey)
+            }
+
+            console.log(`\n  Manually remove them and try again:`)
+            console.log(`  $ rm ${ privateKey } ${ publicKey }`)
+            process.exit(1)
+          }
+
+          await remove(privateKey)
+          await remove(publicKey)
+        }
+
+        await exec(`ssh-keygen -t rsa -b 4096 -m PEM -f ${ privateKey } -N '' && openssl rsa -in ${ privateKey } -pubout -outform PEM -out ${ publicKey }`)
+        // console.log({ res: res.toString() })
+        console.log('  SSL created:')
+        console.log(`  Private key: ${ path.relative(process.cwd(), privateKey) }`)
+        console.log(`  Public key: ${ path.relative(process.cwd(), publicKey) }`)
+        process.exit(0)
+      }
+    }
+  ]
+}
+
+/**
+ * @see {@link https://github.com/maxogden/subcommand}
+ */
+module.exports = function (subcommand) {
+  return [{
+    name: 'app',
+    help: 'app options',
+    command ({ _: args }) {
+      // console.log(`calling app`, { args })
+      const match = subcommand(cli)
+      match(args)
+    }
+  }]
+}
