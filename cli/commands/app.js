@@ -3,6 +3,7 @@ const path = require('path')
 const { mkdirpSync, readJson, remove, pathExists } = require('fs-extra')
 const _ = require('lodash')
 const { exec } = require('../lib/exec.js')
+const { getMongoConnection, getMongoCredentials } = require('pleasure-api')
 const { findRoot, findPackageJson, packageJson, getConfig } = require('pleasure-utils')
 const { Daemonizer } = require('pleasure-daemonizer')
 const { printStatus } = require('../lib/print-status.js')
@@ -108,6 +109,22 @@ const cli = {
       }
     },
     {
+      name: 'diagnose',
+      help: 'prints useful status info of the application',
+      async command () {
+        // DB
+        const credentials = getMongoCredentials()
+        console.log(`Connecting to ${ credentials.database }@${ credentials.host } on port ${ credentials.port }`)
+        await new Promise((resolve, reject) => {
+          const conn = getMongoConnection(credentials)
+          conn.on('connected', resolve)
+          conn.on('error', reject)
+        })
+        console.log(`Connected!`)
+        process.exit(0)
+      }
+    },
+    {
       name: 'gencert',
       help: 'generate SSL certs for JWT authentication or other',
       async command (args) {
@@ -120,7 +137,6 @@ const cli = {
         let privateKey
         let publicKey
 
-
         const proceedWithJwt = () => {
           ({ pluginsConfig: { jwt: { privateKey, publicKey } } } = getPlugins())
 
@@ -130,8 +146,7 @@ const cli = {
 
         if (isJwt) {
           proceedWithJwt()
-        }
-        else if (isPleasureProject()) {
+        } else if (isPleasureProject()) {
           const askJWT = await inquirer.prompt([
             {
               type: 'confirm',
