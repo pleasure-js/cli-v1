@@ -9,6 +9,8 @@ const { Daemonizer } = require('pleasure-daemonizer')
 const { printStatus } = require('../lib/print-status.js')
 const inquirer = require('inquirer')
 const chalk = require('chalk')
+const deploy = require('pleasure-deploy')
+const subcommand = require('subcommand')
 
 const { printCommandsIndex } = require('../../lib/print-commands-index.js')
 const Server = require('../../lib/server.js')
@@ -229,7 +231,8 @@ const cli = {
         console.log(`  Public key: ${ path.relative(process.cwd(), publicKey) }`)
         process.exit(0)
       }
-    }
+    },
+    deploy({ printCommandsIndex, subcommand })
   ]
 }
 
