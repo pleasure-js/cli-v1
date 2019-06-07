@@ -1,0 +1,2 @@
+FROM keepwondering/nginx
+RUN yarn global add keepwondering/pleasure-cli
