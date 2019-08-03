@@ -7,7 +7,7 @@ const subcommand = require('../lib/subcommand.js')
 
 const boilerplates = {
   'Rollup bundler': 'keepwondering/pleasure-boilerplate-rollup-bundle',
-  'Vue.js component': 'keepwondering/pleasure-boilerplate-vue-component',
+  'Vue.js component': 'keepwondering/pleasure-boilerplate-vue',
   'Pleasure full-stack': 'keepwondering/pleasure-boilerplate-full'
 }
 
@@ -40,6 +40,7 @@ const create = {
           help: 'scaffold a pleasure project',
           async command ({ _: [projectName] }) {
             const defaultRepo = path.join(__dirname, '../../../pleasure-boilerplate-default')
+            console.log({ defaultRepo })
             const destination = await askForDestination(projectName)
             const { config: { api } } = await createApp(defaultRepo, destination)
             created(destination, api)
