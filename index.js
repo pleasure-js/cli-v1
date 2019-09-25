@@ -1,2 +1,3 @@
 const { printCommandsIndex } = require('./lib/print-commands-index.js')
-module.exports = { printCommandsIndex }
+const nuxt = require('nuxt')
+module.exports = { printCommandsIndex, nuxt }
