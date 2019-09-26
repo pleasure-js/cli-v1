@@ -35,7 +35,9 @@
     "pleasure-args-parser": "keepwondering/pleasure-args-parser#v1-beta",
     "pleasure-create-tool": "keepwondering/pleasure-create-tool#v1-beta",
     "pleasure-daemonizer": "keepwondering/pleasure-daemonizer#v1-beta",
-    "pleasure-deploy": "keepwondering/pleasure-deploy",
+    "pleasure-deploy": "keepwondering/pleasure-deploy#v1-beta",
+    "pleasure-docs": "keepwondering/pleasure-docs#v1-beta",
+    "pleasure-utils": "keepwondering/pleasure-utils#v1-beta",
     "rimraf": "^2.6.3",
     "subcommand": "^2.1.1",
     "yargs": "^13.2.4"
