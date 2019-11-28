@@ -1,0 +1,4 @@
+FROM keepwondering/deployment:node
+# ADD . /code
+# WORKDIR /app
+RUN apk add --no-cache nginx
