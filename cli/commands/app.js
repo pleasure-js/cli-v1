@@ -14,6 +14,7 @@ const subcommand = require('subcommand')
 
 const { printCommandsIndex } = require('../../lib/print-commands-index.js')
 const Server = require('../../lib/server.js')
+const Generator = require('../../lib/generator.js')
 
 const isPleasureProject = () => {
   try {
@@ -50,6 +51,28 @@ const cli = {
         const port = await start()
         console.log(`Pleasure running on ${ port }`)
         process.emit('pleasure-initialized')
+      }
+    },
+    {
+      name: 'gen',
+      help: 'generate static html files',
+      async command () {
+        requirePleasureProject()
+        await Generator()
+        console.log(`Pleasure generated!`)
+        process.emit('pleasure-generated')
+        process.exit(0)
+      }
+    },
+    {
+      name: 'build',
+      help: 'build production files',
+      async command () {
+        requirePleasureProject()
+        await Generator({ buildOnly: true })
+        console.log(`Pleasure generated!`)
+        process.emit('pleasure-generated')
+        process.exit(0)
       }
     },
     {
