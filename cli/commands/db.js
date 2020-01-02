@@ -1,8 +1,8 @@
 const fs = require('fs')
 const path = require('path')
 const Promise = require('bluebird')
-const { utils: { dumpCSVIntoDB }, getEntities, getPleasureEntityMap, getMongoConnection } = require('pleasure-api')
-const ArgsParser = require('pleasure-args-parser')
+const { utils: { dumpCSVIntoDB }, getEntities, getPleasureEntityMap, getMongoConnection } = require('@pleasure-js/api')
+const { ArgsParser } = require('@pleasure-js/utils')
 const { printCommandsIndex } = require('../../lib/print-commands-index.js')
 
 const cli = {

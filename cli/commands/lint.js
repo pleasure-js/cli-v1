@@ -2,7 +2,7 @@ const chalk = require('chalk')
 const { getRoot } = require('../lib/get-root.js')
 const { exec } = require('../lib/exec.js')
 const { pathExists, readJson } = require('fs-extra')
-const { findRoot } = require('pleasure-utils')
+const { findRoot } = require('@pleasure-js/utils')
 const fs = require('fs')
 const path = require('path')
 

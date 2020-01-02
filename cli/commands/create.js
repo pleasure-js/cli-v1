@@ -1,4 +1,4 @@
-const { create: createApp } = require('pleasure-create-tool')
+const { create: createApp } = require('@pleasure-js/create-tool')
 const { printCommandsIndex } = require('../../lib/print-commands-index.js')
 const { askForDestination } = require('../lib/ask-for-destination.js')
 const inquirer = require('inquirer')
@@ -6,9 +6,11 @@ const path = require('path')
 const subcommand = require('../lib/subcommand.js')
 
 const boilerplates = {
-  'Rollup bundler': 'keepwondering/pleasure-boilerplate-rollup-bundle',
-  'Vue.js component': 'keepwondering/pleasure-boilerplate-vue',
-  'Pleasure full-stack': 'keepwondering/pleasure-boilerplate-full'
+  'Rollup bundler': '@pleasure-js/boilerplate-rollup-bundle',
+  'Vue.js component': '@pleasure-js/boilerplate-vue',
+  'Pleasure full-stack': '@pleasure-js/boilerplate-full',
+  // todo
+  // 'Pleasure Component': 'keepwondering/pleasure-component'
 }
 
 const created = (dir, api) => {
@@ -39,7 +41,7 @@ const create = {
           name: 'app',
           help: 'scaffold a pleasure project',
           async command ({ _: [projectName] }) {
-            const defaultRepo = path.join(__dirname, '../../../pleasure-boilerplate-default')
+            const defaultRepo = path.join(__dirname, '../../../boilerplate-default')
             console.log({ defaultRepo })
             const destination = await askForDestination(projectName)
             const { config: { api } } = await createApp(defaultRepo, destination)
@@ -62,7 +64,7 @@ const create = {
             let gitPath = `https://github.com/${ boilerplates[answer.boilerplate] }`
 
             if (process.env.NODE_ENV === 'development' && process.env.DEV_ENV === 'tin') {
-              gitPath = path.join(__dirname, `../../../${ boilerplates[answer.boilerplate].replace(/^keepwondering\//, '') }`)
+              gitPath = path.join(__dirname, `../../../${ boilerplates[answer.boilerplate].replace(/^@pleasure-js\//, '') }`)
             }
             const destination = await askForDestination(projectName)
             await createApp(gitPath, destination)

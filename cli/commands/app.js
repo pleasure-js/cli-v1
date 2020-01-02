@@ -3,13 +3,13 @@ const path = require('path')
 const { mkdirpSync, readJson, remove, pathExists } = require('fs-extra')
 const _ = require('lodash')
 const { exec } = require('../lib/exec.js')
-const { getMongoConnection, getMongoCredentials } = require('pleasure-api')
-const { findRoot, findPackageJson, packageJson, getConfig } = require('pleasure-utils')
-const { Daemonizer } = require('pleasure-daemonizer')
+const { getMongoConnection, getMongoCredentials } = require('@pleasure-js/api')
+const { findRoot, findPackageJson, packageJson, getConfig } = require('@pleasure-js/utils')
+const { Daemonizer } = require('@pleasure-js/daemonizer')
 const { printStatus } = require('../lib/print-status.js')
 const inquirer = require('inquirer')
 const chalk = require('chalk')
-const deploy = require('pleasure-deploy')
+const deploy = require('@pleasure-js/deploy')
 const subcommand = require('subcommand')
 
 const { printCommandsIndex } = require('../../lib/print-commands-index.js')
@@ -155,7 +155,7 @@ const cli = {
       async command (args) {
         const util = require('util')
         const exec = util.promisify(require('child_process').exec)
-        const { getPlugins } = require('pleasure-api')
+        const { getPlugins } = require('@pleasure-js/api')
 
         const isJwt = process.argv.indexOf('--jwt') >= 0
 

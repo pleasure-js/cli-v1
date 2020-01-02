@@ -1,4 +1,4 @@
-const { Daemonizer } = require('pleasure-daemonizer')
+const { Daemonizer } = require('@pleasure-js/daemonizer')
 const inquirer = require('inquirer')
 const { printStatus } = require('../lib/print-status.js')
 
