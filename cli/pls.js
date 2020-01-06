@@ -1,6 +1,7 @@
 #!/usr/bin/env node
-
+console.log('YEAH!')
 const appCLI = require('./commands/app.js')
+const db = require('./commands/db.js')
 const pm = require('./commands/pm.js')
 const { printCommandsIndex } = require('../lib/print-commands-index.js')
 const { create } = require('./commands/create.js')
@@ -21,6 +22,7 @@ const commands = [
 ]
 
 commands.push(...appCLI(subcommand))
+commands.push(...db(subcommand))
 commands.push(...pm(subcommand))
 
 // todo: load more commands via plugins

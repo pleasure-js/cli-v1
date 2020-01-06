@@ -67,14 +67,14 @@ const cli = {
           return conn.db.collection(entityName).dropIndexes()
         })
 
-/*
-        const { entities } = await getEntities()
+        /*
+                const { entities } = await getEntities()
 
-        await Promise.each(Object.keys(entities), entityName => {
-          console.log(`  Syncing indexes in ${ entityName }`)
-          return entities[entityName].syncIndexes()
-        })
-*/
+                await Promise.each(Object.keys(entities), entityName => {
+                  console.log(`  Syncing indexes in ${ entityName }`)
+                  return entities[entityName].syncIndexes()
+                })
+        */
 
         process.exit(0)
       }
