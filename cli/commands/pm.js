@@ -1,4 +1,5 @@
-const { Daemonizer } = require('@pleasure-js/daemonizer')
+const { DaemonizerClient } = require('@pleasure-js/daemonizer/dist/daemonizer-client')
+const { DaemonizerServer } = require('@pleasure-js/daemonizer')
 const inquirer = require('inquirer')
 const { printStatus } = require('../lib/print-status.js')
 
@@ -15,9 +16,10 @@ const cli = {
       name: 'list',
       help: 'lists running processes',
       async command () {
-        const ProcessManager = new Daemonizer()
+        DaemonizerServer.ensureRunning()
+        const ProcessManager = DaemonizerClient.instance()
         try {
-          const status = await ProcessManager.status()
+          const status = await ProcessManager.list()
           if (status.length > 0) {
             printStatus(status)
           }
@@ -31,9 +33,9 @@ const cli = {
       name: 'stop',
       help: 'stops a given process id',
       async command ({ _: [processId] }) {
-        const ProcessManager = new Daemonizer()
+        DaemonizerServer.ensureRunning()
+        const ProcessManager = DaemonizerClient.instance()
         const stopProcess = async id => {
-          const ProcessManager = new Daemonizer()
           await ProcessManager.stop(id)
           console.log(`'${ id }' has been stopped.`)
         }
@@ -43,7 +45,7 @@ const cli = {
           process.exit(0)
         }
 
-        const status = await ProcessManager.status()
+        const status = await ProcessManager.list()
 
         const answer = await inquirer.prompt([
           {

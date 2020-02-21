@@ -132,6 +132,7 @@ const cli = {
         const Daemonizer = DaemonizerClient.instance()
         const id = packageJson().name
 
+        console.log(`status`, { id })
         const status = await Daemonizer.status(id)
         const running = status.length === 1
 
