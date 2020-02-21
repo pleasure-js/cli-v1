@@ -5,7 +5,8 @@ const _ = require('lodash')
 const { exec } = require('../lib/exec.js')
 const { getMongoConnection, getMongoCredentials } = require('@pleasure-js/api')
 const { findRoot, findPackageJson, packageJson, getConfig } = require('@pleasure-js/utils')
-const { Daemonizer } = require('@pleasure-js/daemonizer')
+const { DaemonizerServer } = require('@pleasure-js/daemonizer')
+const { DaemonizerClient } = require('@pleasure-js/daemonizer/dist/daemonizer-client.js')
 const { printStatus } = require('../lib/print-status.js')
 const inquirer = require('inquirer')
 const chalk = require('chalk')
@@ -69,7 +70,13 @@ const cli = {
       help: 'build production files',
       async command () {
         requirePleasureProject()
-        await Generator({ buildOnly: true })
+        const overrideNuxtConfig = {}
+        if (process.env.PLEASURE_BUILD_DIR) {
+          Object.assign(overrideNuxtConfig, {
+            buildDir: process.env.PLEASURE_BUILD_DIR
+          })
+        }
+        await Generator({ buildOnly: true, overrideNuxtConfig })
         console.log(`Pleasure generated!`)
         process.emit('pleasure-generated')
         process.exit(0)
@@ -80,23 +87,24 @@ const cli = {
       help: 'start the app in production (background)',
       async command () {
         requirePleasureProject()
-        const ProcessManager = new Daemonizer()
+        DaemonizerServer.ensureRunning()
+        const Daemonizer = DaemonizerClient.instance()
         const id = packageJson().name
 
-        const { pid } = await ProcessManager.fork({
+        const forked = await Daemonizer.fork({
           id,
           spawnArgs: {
             command: 'pls',
-            args: ['app', 'dev'],
-            options: {
-              cwd: findRoot(),
-              env: Object.assign({}, process.env, {
-                PLEASURE_PRODUCTION: true
-              })
-            }
+            args: ['app', 'dev']
+          },
+          runningProcessOptions: {
+            cwd: findRoot(),
+            env: Object.assign({}, process.env, {
+              PLEASURE_PRODUCTION: true
+            })
           }
         })
-        printStatus(await ProcessManager.status(id))
+        printStatus(await Daemonizer.status(id))
         // console.log(`Running '${ id }' (pid = ${ pid })`)
         process.exit(0)
       }
@@ -106,10 +114,11 @@ const cli = {
       help: 'stops a running production app',
       async command (args) {
         requirePleasureProject()
-        const ProcessManager = new Daemonizer()
+        await DaemonizerServer.ensureRunning()
+        const Daemonizer = DaemonizerClient.instance()
         const id = packageJson().name
 
-        await ProcessManager.stop(id)
+        await Daemonizer.stop(id)
         console.log(`'${ id }' has been stopped.`)
         process.exit(0)
       }
@@ -119,10 +128,11 @@ const cli = {
       help: 'checks whether the app is running or not',
       async command () {
         requirePleasureProject()
-        const ProcessManager = new Daemonizer()
+        await DaemonizerServer.ensureRunning()
+        const Daemonizer = DaemonizerClient.instance()
         const id = packageJson().name
 
-        const status = await ProcessManager.status(id)
+        const status = await Daemonizer.status(id)
         const running = status.length === 1
 
         if (!running) {
