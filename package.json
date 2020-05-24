@@ -39,7 +39,7 @@
     "@pleasure-js/daemonizer": "git+ssh://git@github.com:pleasure-js/daemonizer.git#v1-beta",
     "@pleasure-js/deploy": "git+ssh://git@github.com:pleasure-js/deploy.git#v1-beta",
     "@pleasure-js/docs": "git+ssh://git@github.com:pleasure-js/docs.git#v1-beta",
-    "@pleasure-js/utils": "git+ssh://git@github.com:pleasure-js/utils.git#v1-beta",
+    "@pleasure-js/utils": "git+ssh://git@github.com:pleasure-js/utils-v1.git#v1-beta",
     "rimraf": "^3.0.0",
     "subcommand": "^2.1.1"
   },
