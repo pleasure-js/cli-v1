@@ -1,5 +1,5 @@
 {
-  "name": "@pleasure-js/cli",
+  "name": "@pleasure-js/cli-v1",
   "version": "1.0.1",
   "description": "command line interface for pleasure",
   "main": "index.js",
@@ -32,7 +32,6 @@
     "mkdirp": "^0.5.1",
     "moment": "^2.24.0",
     "nuxt": "^2.11.0",
-    "@pleasure-js/api": "git+ssh://git@github.com:pleasure-js/api.git#v1-beta",
     "@pleasure-js/api-client": "git+ssh://git@github.com:pleasure-js/api-client.git#v1-beta",
     "@pleasure-js/create-tool": "git+ssh://git@github.com:pleasure-js/create-tool.git#master",
     "@pleasure-js/ui-nuxt": "git+ssh://git@github.com:pleasure-js/ui-nuxt.git#v1-beta",
