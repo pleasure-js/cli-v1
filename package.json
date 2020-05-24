@@ -32,7 +32,7 @@
     "mkdirp": "^0.5.1",
     "moment": "^2.24.0",
     "nuxt": "^2.11.0",
-    "@pleasure-js/api-client": "git+ssh://git@github.com:pleasure-js/api-client.git#v1-beta",
+    "@pleasure-js/api-client": "git+ssh://git@github.com:pleasure-js/api-client-v1.git#v1-beta",
     "@pleasure-js/create-tool": "git+ssh://git@github.com:pleasure-js/create-tool.git#master",
     "@pleasure-js/ui-nuxt": "git+ssh://git@github.com:pleasure-js/ui-nuxt.git#v1-beta",
     "@pleasure-js/ui-vue": "git+ssh://git@github.com:pleasure-js/ui-vue.git#v1-beta",
